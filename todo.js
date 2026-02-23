@@ -2,6 +2,7 @@ const toDoForm = document.querySelector(".toDoForm");
 const toDoInput = toDoForm.querySelector("input");
 const toDos = document.querySelector(".toDos");
 
+
 const TODOLIST = "toDoList";
 let toDoList = [];
 
@@ -34,6 +35,8 @@ function delToDo(event) {
     const { target : button } = event;
     const li = button.parentNode;
     toDos.removeChild(li);
+    toDoList = toDoList.filter((todo) => todo.id !== Number(li.id));
+    localStorage.setItem(TODOLIST, JSON.stringify(toDoList));
 }
 
 function saveToDo(toDo) {
