@@ -9,12 +9,20 @@
 <body>
     <div calss="todo-container">
         <h1 class = "title">Todo List</h1>
-    <form class="toDoForm">
-        <input type="text" placeholder="what are you going to do?">
-        <button type="submit" id="submit-btn">Add</button>
-    </form>
-    <ul class="toDos"></ul>
+        <form id="todo-form">
+            <input type="text" id="todo-input" placeholder="what are you going to do?">
+            <button type="submit" id="submit-btn">Add</button>
+        </form>
+        <ul id="todo-list"></ul>
     </div>
+    <template id="todo-template">
+        <li class="todo-item">
+            <input type="checkbox" class="item-checkbox">
+            <span class="item-title"></span>
+            <button class="delete-btn">Delete</button>
+            <button class="edit-btn">Edit</button>
+        </li>
+    </template>
     <script src="todo.js"></script>
 </body>
 </html>

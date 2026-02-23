@@ -1,63 +1,88 @@
-const toDoForm = document.querySelector(".toDoForm");
-const toDoInput = toDoForm.querySelector("input");
-const toDos = document.querySelector(".toDos");
+const todoForm = document.getElementById("todo-form");
+const todoInput = document.getElementById("todo-input")
+const todoList = document.getElementById("todo-list");
+const todoTemplate = document.getElementById("todo-template");
 
+const TODOLIST = "todo-list";
+let todoListData = [];
+let editingId = null;
 
-const TODOLIST = "toDoList";
-let toDoList = [];
+const handleFormSubmit = (event) => {
+    event.preventDefault();
+    const inputValue = todoInput.value.trim();
+    if (inputValue === "") return;
+    if (editingId !== null) {
+        const todoupdate = {
+            text: inputValue,
+            id: editingId
+        };
+        todoListData = todoListData.map((todo) => todo.id === todoupdate.id ? todoupdate : todo);
+        localStorage.setItem(TODOLIST, JSON.stringify(todoListData));
+        const editTodoItem = todoList.querySelector(`.todo-item[id="${editingId}"]`);
+        editTodoItem.querySelector('.item-title').textContent = inputValue;
+    } else {
+        const id = saveTodo(inputValue);
+        paintTodo(inputValue, id);
+    }
+    todoInput.value = "";
+    editingId = null;
+};
 
-function loadToDoList() {
+todoForm.addEventListener("submit", handleFormSubmit);
+loadTodoList();
+
+function saveTodo(text) {
+    const todoObj = {
+        text: text,
+        id: todoListData.length + 1
+    };
+    todoListData.push(todoObj);
+    localStorage.setItem(TODOLIST, JSON.stringify(todoListData));
+    return todoObj.id;
+}
+
+function paintTodo(text, id) {
+    const todoItem = todoTemplate.content.cloneNode(true).querySelector(".todo-item");
+    const delButton = todoItem.querySelector(".delete-btn");
+    const editButton = todoItem.querySelector(".edit-btn");
+    todoItem.querySelector('.item-title').textContent = text;
+    delButton.addEventListener("click", delTodo);
+    editButton.addEventListener("click", editTodo);
+    todoItem.id = id;
+    todoList.appendChild(todoItem);
+}
+
+function loadTodoList() {
     const loadedTodoList = localStorage.getItem(TODOLIST);
     if (loadedTodoList !== null) {
-        const parsedToDoList = JSON.parse(loadedTodoList);
-        for (let toDo of parsedToDoList) {
-            const { text } = toDo;
-            paintToDo(text);
-            saveToDo(text);
+        const parsedTodoList = JSON.parse(loadedTodoList);
+        todoListData = parsedTodoList;
+        for (let todo of parsedTodoList) {
+            paintTodo(todo.text, todo.id);
         }
     }
 }
 
-function paintToDo(toDo) {
-    const li = document.createElement("li");
-    const span = document.createElement("span");
-    const delButton = document.createElement("button");
-    delButton.innerText = "Del";
-    delButton.addEventListener("click", delToDo);
-    span.innerHTML = toDo;
-    li.appendChild(span);
-    li.appendChild(delButton);
-    li.id = toDoList.length + 1;
-    toDos.appendChild(li);
-}
-
-function delToDo(event) {
+function delTodo(event) {
     const { target : button } = event;
     const li = button.parentNode;
-    toDos.removeChild(li);
-    toDoList = toDoList.filter((todo) => todo.id !== Number(li.id));
-    localStorage.setItem(TODOLIST, JSON.stringify(toDoList));
+    todoList.removeChild(li);
+    todoListData = todoListData.filter((todo) => todo.id !== Number(li.id));
+    todoListData.forEach((todo, index)=>{
+        todo.id = index + 1;
+    })
+    const todoItems = todoList.querySelectorAll('.todo-item');
+    todoItems.forEach((item, index) => {
+        item.id = index + 1;
+    })
+    localStorage.setItem(TODOLIST, JSON.stringify(todoListData));
 }
 
-function saveToDo(toDo) {
-    const toDoObj = {
-        text: toDo,
-        id: toDoList.length + 1
-    };
-    toDoList.push(toDoObj);
-    localStorage.setItem(TODOLIST, JSON.stringify(toDoList));
+function editTodo(event) {
+    const { target : button } = event;
+    const editTodoItem = button.parentNode;
+    editingId = Number(editTodoItem.id);
+    const text = editTodoItem.querySelector('.item-title').textContent;
+    todoInput.value = text;
 }
 
-function creatToDo(event) {
-    event.preventDefault();
-    const toDo = toDoInput.value;
-    paintToDo(toDo);
-    saveToDo(toDo);
-    toDoInput.value = "";
-}
-
-function init() {
-    toDoForm.addEventListener("submit", creatToDo);
-    loadToDoList();
-}
-init();
